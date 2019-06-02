@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.stream.Stream;
 
 import javax.xml.ws.handler.MessageContext.Scope;
@@ -13,7 +14,6 @@ import tuples.Tuple;
 
 public class DNSAnswerMaker {
 	
-	private byte[] request = null;
 	private DNSServerCache cache = null;
 	private String name = "";
 	private String type = "";
@@ -70,18 +70,18 @@ public class DNSAnswerMaker {
 		return new Tuple<String, String>(name, type);
 	}
 	
-	public DNSAnswerMaker(byte[] request, DNSServerCache cache){
-		this.request = request;
+	public DNSAnswerMaker(String type, String target, DNSServerCache cache){
 		this.cache = cache;
-		Tuple<String, String> extractedData = extractRequestData(request);
-		this.name = extractedData.value1;
-		this.type = extractedData.value2;
+		this.name = target;
+		this.type = type;
 	}
 	
 	private byte[] makeHeader() {
-		byte[] request_id = Arrays.copyOfRange(request, 0, 2);
+		Random randomizer = new Random();
+		int id = randomizer.nextInt(99);
+		byte[] request_id = new byte[] {0, (byte)id};
 		byte[] messageType = new byte[] {81, 0};
-		byte[] questions = Arrays.copyOfRange(request, 4, 6);
+		byte[] questions = new byte[] {0, 1}; // тут не уверен, чекнуть еще раз, че это вообще
 		int typeNameInfoLength = cache.getInfo(type + name).size();
 		ByteBuffer buffer = ByteBuffer.allocate(4);
 		buffer.putInt(typeNameInfoLength);
